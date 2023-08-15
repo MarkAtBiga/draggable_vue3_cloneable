@@ -91,7 +91,7 @@ export default {
     },
     clone({ id }) {
       return {
-        name: 'Test',
+        name: 'Geklont :)',
         id: id + 10,
       };
     },
