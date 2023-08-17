@@ -8,10 +8,11 @@
           :list="tasks.clonables"
           :group="{ name: 'tasks', pull: 'clone', put: false }"
           :clone="clone"
+          @end="onEnd"
         >
           <div v-for="(element, i) in tasks.clonables" :key="element.id">
             <div class="bg-white mt-3 p-2 shadow border rounded">
-              <p>{{ element }}</p>
+              <p>{{ element.name }}</p>
             </div>
           </div>
         </draggable>
@@ -21,7 +22,7 @@
         <draggable class="draggable-list" :list="tasks.todos" group="tasks">
           <div v-for="(element, i) in tasks.todos" :key="element.id">
             <div class="bg-white mt-3 p-2 shadow border rounded">
-              <p>{{ element }}</p>
+              <p>{{ element.name }}</p>
             </div>
           </div>
         </draggable>
@@ -52,15 +53,33 @@
       </div>
     </div>
   </div>
+  <Modal
+    name="modalTest"
+    :animation="true"
+    v-model:visible="isVisible"
+    :okButton="{
+      onclick: onOK,
+      loading: true,
+    }"
+  >
+    <input v-model="message" placeholder="edit me" />
+  </Modal>
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
+import { ref } from 'vue';
 import { VueDraggableNext } from 'vue-draggable-next';
+import { useModal, Modal } from 'usemodal-vue3';
+
+let isVisible = ref(false);
+let message = ref('');
+let activeIndex: i;
+let globalId = 10;
 
 export default {
   components: {
     draggable: VueDraggableNext,
+    modal: Modal,
   },
   data() {
     return {
@@ -69,17 +88,21 @@ export default {
           { name: 'Clonable 1', id: 1 },
           { name: 'Clonable 2', id: 2 },
           { name: 'Clonable 3', id: 3 },
-          { name: 'Clonable 1', id: 4 },
+          { name: 'Clonable 4', id: 4 },
         ],
         todos: [
-          { name: 'Clonable 1', id: 5 },
-          { name: 'Clonable 2', id: 6 },
-          { name: 'Clonable 3', id: 7 },
-          { name: 'Clonable 1', id: 8 },
+          { name: 'Clonable 5', id: 5 },
+          { name: 'Clonable 6', id: 6 },
+          { name: 'Clonable 7', id: 7 },
+          { name: 'Clonable 8', id: 8 },
         ],
         inProgress: [],
         completed: [],
       },
+      isVisible,
+      message,
+      activeIndex,
+      globalId,
     };
   },
   methods: {
@@ -90,10 +113,20 @@ export default {
       return this.controlOnStart ? 'clone' : true;
     },
     clone({ id }) {
+      this.globalId++;
       return {
-        name: 'Geklont :)',
-        id: id + 10,
+        name: 'Geklont :)' + this.globalId,
+        id: this.globalId,
       };
+    },
+    onEnd(event) {
+      this.activeIndex = event.newIndex;
+      console.log(this.activeIndex);
+      this.isVisible = true;
+    },
+    onOK() {
+      this.tasks.todos[this.activeIndex].name = '' + message.value;
+      this.isVisible = false;
     },
   },
 };
